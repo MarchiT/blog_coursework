@@ -13,5 +13,5 @@ def markdown(value):
 
 
 @register.filter
-def get(cv, arg):
-    return cv.qualifications_set.get(type=arg).qualification_set.all()
+def get(qs, arg):
+    return [q.text for q in qs.filter(type=arg)]

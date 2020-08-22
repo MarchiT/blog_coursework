@@ -13,33 +13,34 @@
     <title>Preview CV</title>
 </head>
 <body>
-    {% if cv %}
-        <h1>{{ cv.credentials.name }}</h1>
-        <h3>{{ cv.credentials.email }}</h3>
-        <h3>{{ cv.credentials.phone }}</h3>
-        <h3>{{ cv.credentials.address }}</h3>
+    {% if credentials %}
+        <h1>{{ credentials.name }}</h1>
+        <h3>{{ credentials.email }}</h3>
+        <h3>{{ credentials.phone }}</h3>
+        <h3>{{ credentials.address }}</h3>
 
         <br>
         <h2>SKILLS</h2>
         <ul>
-            {% for skill in cv|get:"Skills" %}
+            {% for skill in qualifications|get:"Skills" %}
                 <li>{{ skill }}</li>
             {% endfor %}
         </ul>
 
         <h2>EDUCATION</h2>
-        {% for ed in cv|get:"Education" %}
+        {% for ed in qualifications|get:"Education" %}
             <p>{{ ed | markdown | safe }}</p>
         {% endfor %}
 
         <h2>CAREER</h2>
-        {% for cr in cv|get:"Career" %}
+        {% for cr in qualifications|get:"Career" %}
             <p>{{ cr | markdown | safe }}</p>
         {% endfor %}
 
-        <a class="blog-title btn btn-light" href="{% url 'cv:edit' cv.id %}" role="button">Edit</a>
+        <a class="blog-title btn btn-light" href="{% url 'cv:edit' %}" role="button">Edit</a>
     {% else %}
         <h1>CV not available.</h1>
+        <a class="blog-title btn btn-light" href="{% url 'cv:edit' %}" role="button">Create</a>
     {% endif %}
 
 </body>
