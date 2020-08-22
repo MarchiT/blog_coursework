@@ -8,7 +8,7 @@ class IndexView(generic.ListView):
     context_object_name = 'posts_list'
 
     def get_queryset(self):
-        return Post.objects.all().order_by('-pub_date')
+        return Post.objects.order_by('-pub_date')
 
 
 class DetailView(generic.DetailView):

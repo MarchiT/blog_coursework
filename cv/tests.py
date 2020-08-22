@@ -20,10 +20,12 @@ class CVPreviewTests(TestCase):
         self.assertTemplateUsed(response, 'cv/preview.html')
 
     def test_preview_page_without_cv(self):
+        # must have 'create' button instead
         response = self.client.get(reverse('cv:preview'))
         self.assertEqual(response.status_code, 200)
         self.assertIs(response.context['credentials'], None)
         self.assertContains(response, 'CV not available.')
+        self.assertContains(response, "Create")
 
     def test_preview_page_with_cv(self):
         create_cv()
@@ -58,30 +60,37 @@ class CVEditTests(TestCase):
         self.assertTemplateUsed(response, 'cv/edit.html')
 
     def test_edit_without_cv(self):
-        # must have 'create' button instead
+        # form should still be present, for creating a new CV
         response = self.client.get(reverse('cv:edit'))
-        pass
+        self.assertEqual(response.status_code, 200)
 
     def test_all_cv_sections_should_be_present(self):
         create_cv()
         response = self.client.get(reverse('cv:edit'))
-
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, 'CV not available.')
-        # assert all section names are present
         for t in q_types:
             self.assertContains(response, t)
 
     def test_can_save_POST_request(self):
-        pass
+        credentials = create_cv()
+        self.client.post(reverse('cv:edit'), data={'Name': 'New Name'})
+        self.assertEqual(Credentials.objects.count(), 1)
+        self.assertEqual(credentials.name, 'New Name')
 
     def test_redirects_after_POST(self):
-        pass
+        create_cv()
+        response = self.client.post(reverse('cv:edit'), data={'name': 'New Name'})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['location'], reverse('cv:preview'))
 
-    def test_should_only_save_valid_phones(self):
-        pass
+    def test_cv_creation(self):
+        data = {}  # full credentials
+        self.assertIsNone(Credentials.objects.first())
+        self.client.post(reverse('cv:edit'), data=data)
+        self.assertEqual(Credentials.objects.count(), 1)
+        self.assertEqual(Credentials.objects.first(), Credentials(data))
 
-
-class CVModelTests(TestCase):
-    def test_valid_phone_number(self):
-        pass
+    def test_POST_invalid_data(self):
+        response = self.client.post(reverse('cv:edit'), data={})
+        self.assertEqual(response, None)
