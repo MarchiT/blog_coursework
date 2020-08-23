@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.views import generic
 from django.urls import reverse
 from django.http import HttpResponseRedirect
-from django.forms import modelformset_factory
+from django.forms import modelformset_factory, Textarea
 
 from .models import Credentials, Qualification
 from .forms import CForm
@@ -19,22 +19,23 @@ class PreviewView(generic.base.TemplateView):
 
 
 def edit_cv(request):
-    types = Qualification.QTypes
-    QFormSet = modelformset_factory(Qualification, fields=('text', ), can_delete=True, extra=1)
+    types = Qualification.QTypes.values
+    QFormSet = modelformset_factory(Qualification, fields=('text', ), widgets={"text": Textarea(attrs={'rows': 3})}, can_delete=True, extra=1)
 
     if request.method == 'POST':
         credentials_form = CForm(request.POST, instance=Credentials.objects.first())
-        formsets = [QFormSet(request.POST, prefix=t) for t in types.values]
+        formsets = [QFormSet(request.POST, prefix=t) for t in types]
 
         if credentials_form.is_valid() and all([f.is_valid() for f in formsets]):
             credentials_form.save()
             [save_formset(f) for f in formsets]
             return HttpResponseRedirect(reverse('cv:preview'))
-        print(formsets[0].errors)
+    else:
+        credentials_form = CForm(instance=Credentials.objects.first())
+        formsets = [QFormSet(prefix=t, queryset=Qualification.objects.filter(type=t)) for t in types]
 
-    context = {t.lower() + '_formset': QFormSet(prefix=t, queryset=Qualification.objects.filter(type=t)) for t in types.values}
-    context['credentials_form'] = CForm(instance=Credentials.objects.first())
-    return render(request, 'cv/edit.html', context)
+    return render(request, 'cv/edit.html', {**{'credentials_form': credentials_form},
+                                            **{t.lower() + '_formset': f for (t, f) in zip(types, formsets)}})
 
 
 def save_formset(f):
