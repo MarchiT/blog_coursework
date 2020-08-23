@@ -1,16 +1,35 @@
 from django.test import TestCase
-
 from django.urls import reverse
+from django.core.exceptions import ValidationError
 
 from .models import Credentials, Qualification
 
 q_types = Qualification.QTypes.values
+q_count = 5
+
+
+def create_credentials_data():
+    return {'name': 'Marina', 'address': 'Test Address', 'phone': '+1234', 'email': 'marina@example.com'}
 
 
 def create_cv():
     for t in q_types:
-        [Qualification(type=t, text=t + ' qualification #' + str(x)).save() for x in range(5)]
-    return Credentials.objects.create(name='Marina', address='Test Address', phone='+1234', email='marina@example.com')
+        [Qualification(type=t, text=t + ' qualification #' + str(x)).save() for x in range(q_count)]
+    return Credentials.objects.create(**create_credentials_data())
+
+
+def create_post_data(new_data):
+    q_current_count = int(Qualification.objects.count() / len(q_types))
+    formset_configs = {'-TOTAL_FORMS': q_current_count + 1, '-INITIAL_FORMS': q_current_count,
+                       '-MIN_NUM_FORMS': 0, '-MAX_NUM_FORMS': 1000}
+    data = create_credentials_data()
+    for t in q_types:
+        for label, value in formset_configs.items():
+            data[t + label] = str(value)
+        for q, i in zip(Qualification.objects.filter(type=t), range(q_current_count)):
+            data['-'.join([t, str(i), 'text'])] = q.text
+            data['-'.join([t, str(i), 'id'])] = q.id
+    return {**data, **new_data}
 
 
 class CVPreviewTests(TestCase):
@@ -72,25 +91,31 @@ class CVEditTests(TestCase):
         for t in q_types:
             self.assertContains(response, t)
 
-    def test_can_save_POST_request(self):
-        credentials = create_cv()
-        self.client.post(reverse('cv:edit'), data={'Name': 'New Name'})
-        self.assertEqual(Credentials.objects.count(), 1)
-        self.assertEqual(credentials.name, 'New Name')
-
     def test_redirects_after_POST(self):
         create_cv()
-        response = self.client.post(reverse('cv:edit'), data={'name': 'New Name'})
+        response = self.client.post(reverse('cv:edit'), data=create_post_data({'name': 'New Name'}))
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['location'], reverse('cv:preview'))
 
-    def test_cv_creation(self):
-        data = {}  # full credentials
-        self.assertIsNone(Credentials.objects.first())
-        self.client.post(reverse('cv:edit'), data=data)
-        self.assertEqual(Credentials.objects.count(), 1)
-        self.assertEqual(Credentials.objects.first(), Credentials(data))
+    def test_can_save_post_request(self):
+        create_cv()
+        self.client.post(reverse('cv:edit'), data=create_post_data({'name': 'New Name'}))
 
-    def test_POST_invalid_data(self):
-        response = self.client.post(reverse('cv:edit'), data={})
-        self.assertEqual(response, None)
+        self.assertEqual(Credentials.objects.count(), 1)
+        self.assertEqual(Credentials.objects.first().name, 'New Name')
+        self.assertEqual(Qualification.objects.count(), q_count * len(q_types))
+
+    def test_cv_creation(self):
+        data = create_credentials_data()
+        self.assertIsNone(Credentials.objects.first())
+        response = self.client.post(reverse('cv:edit'), data=create_post_data(data))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Credentials.objects.count(), 1)
+        field_values = lambda d: {k: d[k] for k in d.keys() & data.keys()}
+        self.assertEqual(field_values(vars(Credentials.objects.first())), field_values(vars(Credentials(**data))))
+
+    def test_submit_invalid_data(self):
+        create_cv()
+        with self.assertRaises(ValidationError):
+            self.client.post(reverse('cv:edit'), data={})
