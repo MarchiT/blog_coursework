@@ -23,7 +23,7 @@ class PreviewView(generic.base.TemplateView):
 
 
 def edit_cv(request):
-    QFormSet = modelformset_factory(Qualification, fields=('text', ), widgets={"text": Textarea(attrs={'rows': 3})}, can_delete=True, extra=1)
+    QFormSet = modelformset_factory(Qualification, fields=('text', ), widgets={"text": Textarea(attrs={'rows': 6})}, can_delete=True, extra=1)
 
     if request.method == 'POST':
         credentials_form = CForm(request.POST, instance=Credentials.objects.first())

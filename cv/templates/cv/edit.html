@@ -1,16 +1,24 @@
 {% extends "base.html" %}
 {% load cv_extras %}
-{% load widget_tweaks %}
 
 {% block content %}
-    <form method="post">{% csrf_token %}
-        {{ credentials_form }}
+    <form method="post">
+        {% csrf_token %}
+
+        {% include 'cv/includes/c_form.html' with form=credentials_form %}
 
         {% for formset in formsets %}
-            <h2>{{ formset | prefix | upper }}</h2>
-            <table>{{ formset }}</table>
+            <div class="py-5">
+                <h1 class="text-center">{{ formset | prefix | upper }}</h1>
+                {{ formset.management_form }}
+                {% for form in formset %}
+                    {% include 'cv/includes/q_form.html' with form=form formset=formset %}
+                {% endfor %}
+            </div>
         {% endfor %}
 
-        <input type="submit" value="Update">
+        <div class="text-center">
+            <input class="btn btn-dark btn-lg cv-button" type="submit" value="Update">
+        </div>
     </form>
 {% endblock %}

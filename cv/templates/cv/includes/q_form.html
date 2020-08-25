@@ -1,0 +1,24 @@
+{% load widget_tweaks %}
+
+{{ form.non_field_errors }}
+
+<div class="form-group row">
+    {% for hidden_field in form.hidden_fields %}
+        {{ hidden_field }}
+    {% endfor %}
+
+    <div class="col-sm-10">
+    {% if form.text.errors %}
+        {% include 'cv/includes/errors.html' with field=form.text %}
+    {% else %}
+        {% render_field form.text class="form-control" %}
+    {% endif %}
+    </div>
+
+    {% if formset.can_delete %}
+        <div class="form-check mb-2 mr-sm-2">
+            <label for="{{ form.delete.id_for_label }}" class="form-check-label">Remove:</label>
+            {{ form.DELETE }}
+        </div>
+    {% endif %}
+</div>
