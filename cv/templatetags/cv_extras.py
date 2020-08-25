@@ -15,3 +15,8 @@ def markdown(value):
 @register.filter
 def get(qs, arg):
     return [q.text for q in qs.filter(type=arg)]
+
+
+@register.filter
+def prefix(formset):
+    return formset.prefix

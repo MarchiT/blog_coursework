@@ -17,9 +17,10 @@ class Qualification(models.Model):
         SKILLS = 'Skills', _('Skills')
         EDUCATION = 'Education', _('Education')
         CAREER = 'Career', _('Career')
+        PROJECTS = 'Projects', _('Projects')
 
     type = models.CharField(max_length=200, choices=QTypes.choices)
     text = models.TextField()
 
     def __str__(self):
-        return self.type + ' ' + str(self.id)
+        return self.type + ' (' + self.text[:15] + '..)'

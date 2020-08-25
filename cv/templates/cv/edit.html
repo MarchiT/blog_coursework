@@ -1,32 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <!-- Bootstrap CDN -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+{% extends "base.html" %}
+{% load cv_extras %}
+{% load widget_tweaks %}
 
-    {% load static %}
-    {% load cv_extras %}
-
-    <link rel="stylesheet", type="text/css", href="{% static 'posts/style.css' %}">
-    <meta charset="UTF-8">
-
-    <title>Edit CV</title>
-</head>
-
-<body>
+{% block content %}
     <form method="post">{% csrf_token %}
         {{ credentials_form }}
 
-        <h2>SKILLS</h2>
-        <table>{{ skills_formset }}</table>
-
-        <h2>EDUCATION</h2>
-        <table>{{ education_formset }}</table>
-
-        <h2>CAREER</h2>
-        <table>{{ career_formset }}</table>
+        {% for formset in formsets %}
+            <h2>{{ formset | prefix | upper }}</h2>
+            <table>{{ formset }}</table>
+        {% endfor %}
 
         <input type="submit" value="Update">
     </form>
-</body>
-</html>
+{% endblock %}

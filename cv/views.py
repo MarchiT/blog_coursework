@@ -8,6 +8,9 @@ from .models import Credentials, Qualification
 from .forms import CForm
 
 
+types = Qualification.QTypes.values
+
+
 class PreviewView(generic.base.TemplateView):
     template_name = 'cv/preview.html'
 
@@ -15,11 +18,11 @@ class PreviewView(generic.base.TemplateView):
         context = super().get_context_data(**kwargs)
         context['credentials'] = Credentials.objects.first()
         context['qualifications'] = Qualification.objects.all()
+        context['q_types'] = types
         return context
 
 
 def edit_cv(request):
-    types = Qualification.QTypes.values
     QFormSet = modelformset_factory(Qualification, fields=('text', ), widgets={"text": Textarea(attrs={'rows': 3})}, can_delete=True, extra=1)
 
     if request.method == 'POST':
@@ -34,8 +37,7 @@ def edit_cv(request):
         credentials_form = CForm(instance=Credentials.objects.first())
         formsets = [QFormSet(prefix=t, queryset=Qualification.objects.filter(type=t)) for t in types]
 
-    return render(request, 'cv/edit.html', {**{'credentials_form': credentials_form},
-                                            **{t.lower() + '_formset': f for (t, f) in zip(types, formsets)}})
+    return render(request, 'cv/edit.html', {'credentials_form': credentials_form, 'formsets': formsets})
 
 
 def save_formset(f):

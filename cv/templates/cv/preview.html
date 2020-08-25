@@ -1,47 +1,31 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <!-- Bootstrap CDN -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+{% extends "base.html" %}
+{% load cv_extras %}
 
-    {% load static %}
-    {% load cv_extras %}
-
-    <link rel="stylesheet", type="text/css", href="{% static 'posts/style.css' %}">
-    <meta charset="UTF-8">
-
-    <title>Preview CV</title>
-</head>
-<body>
+{% block content %}
+    <div class="container jumbotron rounded px-5">
     {% if credentials %}
-        <h1>{{ credentials.name }}</h1>
-        <h3>{{ credentials.email }}</h3>
-        <h3>{{ credentials.phone }}</h3>
-        <h3>{{ credentials.address }}</h3>
+        <div class="text-right pr-4">
+            <h1 class="display-4">{{ credentials.name }}</h1>
+            <h3 class="text-muted">{{ credentials.phone }}</h3>
+            <h3 class="text-muted">{{ credentials.address }}</h3>
+            <h3 class="text-muted">{{ credentials.email }}</h3>
+        </div>
 
-        <br>
-        <h2>SKILLS</h2>
-        <ul>
-            {% for skill in qualifications|get:"Skills" %}
-                <li>{{ skill }}</li>
+        <div class="pl-4">
+            {% for type in q_types %}
+                <h2>{{ type | upper }}</h2>
+                {% for q in qualifications|get:type %}
+                    <div class="qualification">{{ q | markdown | safe }}</div>
+                {% endfor %}
             {% endfor %}
-        </ul>
+        </div>
 
-        <h2>EDUCATION</h2>
-        {% for ed in qualifications|get:"Education" %}
-            <p>{{ ed | markdown | safe }}</p>
-        {% endfor %}
-
-        <h2>CAREER</h2>
-        {% for cr in qualifications|get:"Career" %}
-            <p>{{ cr | markdown | safe }}</p>
-        {% endfor %}
-
-        <a class="blog-title btn btn-light" href="{% url 'cv:edit' %}" role="button">Edit</a>
+        <div class="text-center">
+            <a href="{% url 'cv:edit' %}" type="button" class="text-center btn btn-dark btn-lg cv-button">Edit</a>
+        </div>
     {% else %}
         <h1>CV not available.</h1>
         <a class="blog-title btn btn-light" href="{% url 'cv:edit' %}" role="button">Create</a>
     {% endif %}
-
-</body>
-</html>
+    </div>
+{% endblock %}
