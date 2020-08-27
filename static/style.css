@@ -1,0 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap');
+
+body {
+    background: white url("images/geometric-leaves.png");
+}
+
+.blog-title, .cv-button {
+    font-family: 'Poppins', sans-serif;
+}
+
+.post-content {
+    white-space: pre-wrap;
+}
+
+.logo-link {
+    text-decoration: none !important;
+}
+
+.qualification {
+    padding-bottom: 25px;
+}

@@ -1,9 +1,10 @@
 {% extends "base.html" %}
+{% load extras %}
 
 {% block content %}
     <div class="blog-post py-3 px-5 text-justify">
         <h2 class="blog-title blog-post-title text-center"><a class="text-dark" href="{% url 'posts:detail' post.id %}">{{ post.title }}</a></h2>
         <p class="blog-post-meta text-muted text-center">{{ post.pub_date }}</p>
-        <p>{{ post.content }}</p>
+        <p class="post-content">{{ post.content | markdown | safe }}</p>
     </div>
 {% endblock %}
